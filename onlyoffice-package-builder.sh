@@ -43,7 +43,7 @@ DEB_ONLY="false"
 UPSTREAM_ORGANIZATION="ONLYOFFICE"
 
 SERVER_CUSTOM_COMMITS="69dce08b04ac1dde93d74d5a38614841be166fce"
-WEB_APPS_CUSTOM_COMMITS="101f045c7d9cf56692304b6ac2f91fc4f9b5874f"
+WEB_APPS_CUSTOM_COMMITS="294e644bcab651fbf86eef359780a7b138fae190 f1bfc18764cd7a0bac92c4d00472f2668274658c 48dcc5c22c8463a39c5368fcb3c55da793a915a9"
 
 # Check the arguments.
 for option in "$@"; do
@@ -373,6 +373,31 @@ if "v8_89 vpython3 system python" not in text:
     text = text.replace(boot_line, boot_line + vpython_fix, 1)
     print("v8_89.py patched: vpython3 -> /usr/bin/python3")
 
+fix24_old = (
+    '  old_cur = os.getcwd()\n'
+    '  os.chdir("third_party/llvm-build/Release+Asserts/lib")\n'
+    '  base.cmd("mv", ["libstdc++.so.6", "libstdc++.so.6.old"])\n'
+    '  base.cmd("ln", ["-s", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6", "libstdc++.so.6"])\n'
+    '  os.chdir(old_cur)\n'
+    '  return\n'
+)
+fix24_new = (
+    '  llvm_libstdcxx = "third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6"  # v8_89 fix_ubuntu24 skip missing\n'
+    '  if not base.is_file(llvm_libstdcxx):\n'
+    '    return  # v8_89 fix_ubuntu24 skip missing\n'
+    '  old_cur = os.getcwd()\n'
+    '  os.chdir("third_party/llvm-build/Release+Asserts/lib")\n'
+    '  base.cmd("mv", ["libstdc++.so.6", "libstdc++.so.6.old"])\n'
+    '  base.cmd("ln", ["-s", "/usr/lib/x86_64-linux-gnu/libstdc++.so.6", "libstdc++.so.6"])\n'
+    '  os.chdir(old_cur)\n'
+    '  return\n'
+)
+if "v8_89 fix_ubuntu24 skip missing" not in text:
+    if fix24_old not in text:
+        raise SystemExit("v8_89.py: cannot find fix_ubuntu24 libstdc++ block")
+    text = text.replace(fix24_old, fix24_new, 1)
+    print("v8_89.py patched: fix_ubuntu24 skips missing llvm libstdc++")
+
 p.write_text(text)
 if (
     "v8_89 depot_tools pin" in text
@@ -380,6 +405,7 @@ if (
     and "v8_89 depot_tools bootstrap fix" in text
     and "v8_89 python3 path" in text
     and "v8_89 vpython3 system python" in text
+    and "v8_89 fix_ubuntu24 skip missing" in text
 ):
     print("v8_89.py patch complete")
 
