@@ -43,7 +43,8 @@ DEB_ONLY="false"
 UPSTREAM_ORGANIZATION="ONLYOFFICE"
 
 SERVER_CUSTOM_COMMITS="69dce08b04ac1dde93d74d5a38614841be166fce"
-WEB_APPS_CUSTOM_COMMITS="294e644bcab651fbf86eef359780a7b138fae190 e071d0bba0872fadf19eab36b2c898408c4d8c09 48dcc5c22c8463a39c5368fcb3c55da793a915a9"
+WEB_APPS_CUSTOM_COMMITS="294e644bcab651fbf86eef359780a7b138fae190 6e9dc6e76e70300fdc9880a9c8a9d8c187daa9c1 48dcc5c22c8463a39c5368fcb3c55da793a915a9"
+SDKJS_CUSTOM_COMMITS="f49c25d4ff547f130f4d2786533cd70c377cbf23"
 
 # Check the arguments.
 for option in "$@"; do
@@ -220,6 +221,7 @@ build_oo_binaries() {
 
   prepare_custom_repo "server" "${_UPSTREAM_TAG}" "${_UNLIMITED_ORGANIZATION}" ${SERVER_CUSTOM_COMMITS}
   prepare_custom_repo "web-apps" "${_UPSTREAM_TAG}" "${_UNLIMITED_ORGANIZATION}" ${WEB_APPS_CUSTOM_COMMITS}
+  prepare_custom_repo "sdkjs" "${_UPSTREAM_TAG}" "${_UNLIMITED_ORGANIZATION}" ${SDKJS_CUSTOM_COMMITS}
 
   rm -rf build_tools
   if ! git clone \
@@ -243,6 +245,7 @@ build_oo_binaries() {
     -v $(pwd)/${_OUT_FOLDER}:/build_tools/out \
     -v $(pwd)/../server:/server \
     -v $(pwd)/../web-apps:/web-apps \
+    -v $(pwd)/../sdkjs:/sdkjs \
     onlyoffice-document-editors-builder \
     /bin/bash -s <<'EOF'
 set -e
